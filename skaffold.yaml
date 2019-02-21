@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/kcormier-sandbox/python-http-test:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/kcormier-sandbox/python-http-test:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: python-http-test
+        chartPath: charts/python-http-test
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/kcormier-sandbox/python-http-test'
+          image.tag: '{{.DIGEST_HEX}}'
